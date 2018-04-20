@@ -1,0 +1,51 @@
+Description: >
+  This template deploys an EFS volume and mounts to our various ECS instances.
+  We create them it a seperate nested template, so it can be referenced by all of the other nested templates.
+
+Parameters:
+
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+
+  VolumeName:
+    Description: The name to be used for the EFS volume
+    Type: String
+    MinLength: '1'
+    Default: myEFSvolume
+
+  MountPoint:
+    Description: The Linux mount point for the EFS volume
+    Type: String
+    MinLength: '1'
+    Default: myEFSvolume
+
+Resources:
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+      - Key: Name
+        Value:
+          Ref: VolumeName
+
+  MountTarget:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        Ref: Subnet
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
+
+Outputs:
+
+  FileSystem:
+    Description: A reference to the EFS FileSystem
+    Value: !Ref FileSystem
+
+  MountTarget:
+    Description: A reference to the MountTarget
+    Value: !Ref MountTarget

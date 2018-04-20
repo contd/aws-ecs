@@ -1,0 +1,113 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: >
+  jasonkumpf/ecs-cloudformation
+  Main stack
+
+Parameters:
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the ECS instances
+
+  InstanceType:
+    Description: The ECS EC2 instance type
+    Type: String
+    Default: t2.small
+    ConstraintDescription: must be a valid EC2 instance type
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.us-east-2.amazonaws.com/jasonkumpf-ecs-cloudformation/templates/vpc.yml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VpcCIDR:      10.0.0.0/16
+        PublicSubnet1CIDR:  10.0.1.0/24
+        PublicSubnet2CIDR:  10.0.10.0/24
+        PrivateSubnet1CIDR: 10.0.2.0/24
+        PrivateSubnet2CIDR: 10.0.20.0/24
+
+  SecurityGroups:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.us-east-2.amazonaws.com/jasonkumpf-ecs-cloudformation/templates/security-groups.yml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VPC: !GetAtt VPC.Outputs.VPC
+
+  LoadBalancer:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.us-east-2.amazonaws.com/jasonkumpf-ecs-cloudformation/templates/load-balancer.yml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        VPC: !GetAtt VPC.Outputs.VPC
+        Subnets: !GetAtt VPC.Outputs.PublicSubnets
+        SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+
+  FileSystem:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.us-east-2.amazonaws.com/jasonkumpf-ecs-cloudformation/templates/file-system.yml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        Subnet1: !GetAtt VPC.Outputs.PrivateSubnet1
+        Subnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+        SecurityGroup: !GetAtt SecurityGroups.Outputs.MountTargetSecurityGroup
+
+  ECSCluster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.us-east-2.amazonaws.com/jasonkumpf-ecs-cloudformation/templates/ecs-cluster.yml
+      Parameters:
+        EnvironmentName: !Ref AWS::StackName
+        KeyName: !Ref KeyName
+        InstanceType: !Ref InstanceType
+        MinSize: 2
+        MaxSize: 10
+        VPC: !GetAtt VPC.Outputs.VPC
+        SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSInstanceSecurityGroup
+        Subnets: !GetAtt VPC.Outputs.PrivateSubnets
+        FileSystemId: !GetAtt FileSystem.Outputs.FileSystemId
+
+Outputs:
+  LoadBalancerURL:
+    Description: The URL endpoint for the load balancer, CNAME away!
+    Value: !GetAtt LoadBalancer.Outputs.LoadBalancerUrl
