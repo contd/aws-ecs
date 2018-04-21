@@ -59,7 +59,7 @@ Resources:
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/ecs-refarch-continuous-deployment/templates/load-balancer.yaml
+      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-cloudformation-efs/templates/load-balancer.yaml
       Parameters:
         Subnets: !GetAtt VPC.Outputs.Subnets
         VpcId: !GetAtt VPC.Outputs.VpcId
@@ -67,7 +67,7 @@ Resources:
   Service:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.us-east-2.amazonaws.com/jasonkumpf-ecs-cloudformation/templates/service.yml
+      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-cloudformation-efs/templates/service.yml
       Parameters:
         VPC: !GetAtt VPC.Outputs.VPC
         Cluster: !GetAtt ECS.Outputs.Cluster
@@ -79,7 +79,7 @@ Resources:
   Pipeline:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/ecs-refarch-continuous-deployment/templates/pipeline.yaml
+      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-cloudformation-efs/templates/pipeline.yaml
       Parameters:
         Cluster: !GetAtt Cluster
         GitHubUser: !Ref GitHubUser

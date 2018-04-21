@@ -2,13 +2,29 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description: >
-  jasonkumpf/ecs-cloudformation
+  jasonkumpf/ecs-efs-simple
   Main stack
 
 Parameters:
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
     Description: Name of an existing EC2 KeyPair to enable SSH access to the ECS instances
+
+  DesiredCapacity:
+    Type: Number
+    Default: '2'
+    Description: Number of instances to launch in your ECS cluster
+
+  AsgMaxSize:
+    Type: Number
+    Default: '5'
+    Description: Maximum number of instances that can be launched in your ECS cluster
+
+  EFSNameTag:
+    Description: The name of the EFS volume
+    Type: String
+    MinLength: '1'
+    Default: efsvol
 
   InstanceType:
     Description: The ECS EC2 instance type
@@ -55,7 +71,7 @@ Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-cloudformation-efs/templates/vpc.yml
+      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-efs-simple/templates/vpc.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         VpcCIDR:      10.0.0.0/16
@@ -67,7 +83,7 @@ Resources:
   SecurityGroups:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-cloudformation-efs/templates/security-groups.yml
+      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-efs-simple/templates/security-groups.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         VPC: !GetAtt VPC.Outputs.VPC
@@ -75,7 +91,7 @@ Resources:
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-cloudformation-efs/templates/load-balancer.yml
+      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-efs-simple/templates/load-balancer.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         VPC: !GetAtt VPC.Outputs.VPC
@@ -85,7 +101,7 @@ Resources:
   FileSystem:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-cloudformation-efs/templates/file-system.yml
+      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-efs-simple/templates/file-system.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         Subnet1: !GetAtt VPC.Outputs.PrivateSubnet1
@@ -95,7 +111,7 @@ Resources:
   ECSCluster:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-cloudformation-efs/templates/ecs-cluster.yml
+      TemplateURL: https://raw.githubusercontent.com/contd/aws-ecs/master/ecs-efs-simple/templates/ecs-cluster.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         KeyName: !Ref KeyName

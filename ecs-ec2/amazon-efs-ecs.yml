@@ -118,35 +118,29 @@ Resources:
       Tags:
         - Key: Name
           Value: EFS-ECS VPC
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
+
   Subnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: true
       CidrBlock: !Ref CIDRSubnet1
-      AvailabilityZone: !Select 
+      AvailabilityZone: !Select
         - '0'
-        - !GetAZs 
+        - !GetAZs
           Ref: 'AWS::Region'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: c37927ab-7a26-48a4-a4c6-82f37fe42ff1
+
   Subnet2:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: true
       CidrBlock: !Ref CIDRSubnet2
-      AvailabilityZone: !Select 
+      AvailabilityZone: !Select
         - '1'
-        - !GetAZs 
+        - !GetAZs
           Ref: 'AWS::Region'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: f33c452d-a5ff-4e4f-9a86-7a4404350047
+
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
@@ -155,17 +149,13 @@ Resources:
           Value: !Ref 'AWS::StackName'
         - Key: Network
           Value: Public
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 3c88a3d8-5ec3-45bb-b64d-b0d7e5ba83d8
+
   GatewayToInternet:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: e5be370a-87bd-42ab-9867-aa6b8516fc20
+
   PublicRouteTable:
     DependsOn:
       - VPC
@@ -177,9 +167,7 @@ Resources:
           Value: !Ref 'AWS::StackName'
         - Key: Network
           Value: Public
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: f326ad75-3335-4991-87ee-6477742bc247
+
   PublicRoute:
     DependsOn:
       - PublicRouteTable
@@ -189,9 +177,7 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 49c6b353-f2b2-400e-8225-9b930c4fe3bc
+
   PublicSubnetRouteTableAssociation:
     DependsOn:
       - Subnet1
@@ -200,9 +186,7 @@ Resources:
     Properties:
       SubnetId: !Ref Subnet1
       RouteTableId: !Ref PublicRouteTable
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 3cdce4bd-b7c6-42bb-92f0-8ccc985df15b
+
   PublicSubnetRouteTableAssociation2:
     DependsOn:
       - Subnet2
@@ -211,9 +195,7 @@ Resources:
     Properties:
       SubnetId: !Ref Subnet2
       RouteTableId: !Ref PublicRouteTable
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 253b89fc-8352-48e9-84fe-afbfd9dab01f
+
   InstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -228,9 +210,7 @@ Resources:
           FromPort: '80'
           ToPort: '80'
           CidrIp: 0.0.0.0/0
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: cdc37984-ff60-4c5c-9408-7f41d08b5125
+
   MountTargetSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -241,18 +221,14 @@ Resources:
           FromPort: '2049'
           ToPort: '2049'
           CidrIp: !Ref CIDRVPC
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: b62d12f9-2303-4aee-ab85-6215d3fb2942
+
   FileSystem:
     Type: 'AWS::EFS::FileSystem'
     Properties:
       FileSystemTags:
         - Key: Name
           Value: !Ref EFSNameTag
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 11e01c06-b073-4fd2-a77a-51b9aef7bf32
+
   MountTarget:
     Type: 'AWS::EFS::MountTarget'
     Properties:
@@ -260,9 +236,7 @@ Resources:
       SubnetId: !Ref Subnet1
       SecurityGroups:
         - !Ref MountTargetSecurityGroup
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: c9612a53-6333-482a-ba64-5a1ccc3e4e81
+
   MountTarget2:
     Type: 'AWS::EFS::MountTarget'
     Properties:
@@ -270,9 +244,7 @@ Resources:
       SubnetId: !Ref Subnet2
       SecurityGroups:
         - !Ref MountTargetSecurityGroup
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: e3dac1ab-737b-4028-beeb-c7bd4c32e02e
+
   EcsElasticLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
     Properties:
@@ -291,14 +263,10 @@ Resources:
         UnhealthyThreshold: '2'
         Interval: '30'
         Timeout: '5'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: c70a35f2-81a9-4c4a-882c-0cd7475af6c7
+
   ECSCluster:
     Type: 'AWS::ECS::Cluster'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 14de148d-c95d-4f5f-bcf7-6e123d54844b
+
   service:
     Type: 'AWS::ECS::Service'
     DependsOn:
@@ -312,9 +280,7 @@ Resources:
           LoadBalancerName: !Ref EcsElasticLoadBalancer
       Role: !Ref ECSServiceRole
       TaskDefinition: !Ref taskdefinition
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: d6b7e368-baec-470a-bedb-cab764b15824
+
   taskdefinition:
     Type: 'AWS::ECS::TaskDefinition'
     Properties:
@@ -337,9 +303,7 @@ Resources:
         - Host:
             SourcePath: /mnt/efs/mysql
           Name: my-efs
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 521210b6-1472-4d0f-a49e-caa7898103ab
+
   ECSAutoScalingGroup:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn:
@@ -347,13 +311,13 @@ Resources:
       - MountTarget2
     Properties:
       AvailabilityZones:
-        - !Select 
+        - !Select
           - '0'
-          - !GetAZs 
+          - !GetAZs
             Ref: 'AWS::Region'
-        - !Select 
+        - !Select
           - '1'
-          - !GetAZs 
+          - !GetAZs
             Ref: 'AWS::Region'
       VPCZoneIdentifier:
         - !Ref Subnet1
@@ -371,9 +335,7 @@ Resources:
         MaxBatchSize: '1'
         PauseTime: PT15M
         WaitOnResourceSignals: 'true'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 067a7cdc-6c30-4311-92d6-97a37c20e8e4
+
   ContainerInstances:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Metadata:
@@ -388,7 +350,7 @@ Resources:
               python27: []
           files:
             /etc/cfn/cfn-hup.conf:
-              content: !Join 
+              content: !Join
                 - ''
                 - - |
                     [main]
@@ -404,7 +366,7 @@ Resources:
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Join 
+              content: !Join
                 - ''
                 - - |
                     [cfn-auto-reloader-hook]
@@ -430,10 +392,8 @@ Resources:
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
-      'AWS::CloudFormation::Designer':
-        id: d86a3e51-ef74-4f2a-9591-8c547b7bee6c
     Properties:
-      ImageId: !FindInMap 
+      ImageId: !FindInMap
         - AWSRegionToAMI
         - !Ref 'AWS::Region'
         - AMIID
@@ -443,7 +403,7 @@ Resources:
       AssociatePublicIpAddress: true
       SecurityGroups:
         - !Ref InstanceSecurityGroup
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Join':
           - ''
           - - |
@@ -540,9 +500,7 @@ Resources:
                   - 'ec2:Describe*'
                   - 'ec2:AuthorizeSecurityGroupIngress'
                 Resource: '*'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 12dba8bf-4e7e-4308-98ae-eb1f24f5967a
+
   EC2Role:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -558,18 +516,14 @@ Resources:
       ManagedPolicyArns:
         - >-
           arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: dd00e752-a062-4a29-b166-ecd1ad6145b1
+
   EC2InstanceProfile:
     Type: 'AWS::IAM::InstanceProfile'
     Properties:
       Path: /
       Roles:
         - !Ref EC2Role
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 9e08ffe8-e953-4ffe-ba73-0d34355932e0
+
 Outputs:
   ecscluster:
     Value: !Ref ECSCluster
@@ -581,263 +535,3 @@ Outputs:
   FileSystemID:
     Description: File system ID
     Value: !Ref FileSystem
-Metadata:
-  'AWS::CloudFormation::Designer':
-    dd00e752-a062-4a29-b166-ecd1ad6145b1:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 810
-        'y': 90
-      z: 1
-      embeds: []
-    9e08ffe8-e953-4ffe-ba73-0d34355932e0:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 810
-        'y': 210
-      z: 1
-      embeds: []
-      isassociatedwith:
-        - dd00e752-a062-4a29-b166-ecd1ad6145b1
-    12dba8bf-4e7e-4308-98ae-eb1f24f5967a:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 810
-        'y': 330
-      z: 1
-      embeds: []
-    521210b6-1472-4d0f-a49e-caa7898103ab:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 810
-        'y': 450
-      z: 1
-      embeds: []
-    14de148d-c95d-4f5f-bcf7-6e123d54844b:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 810
-        'y': 570
-      z: 1
-      embeds: []
-    11e01c06-b073-4fd2-a77a-51b9aef7bf32:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 810
-        'y': 690
-      z: 1
-      embeds: []
-    3c88a3d8-5ec3-45bb-b64d-b0d7e5ba83d8:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 810
-        'y': 810
-      z: 1
-      embeds: []
-    b6bd65b2-cfd4-4f26-b699-ff6fcdecb559:
-      size:
-        width: 690
-        height: 690
-      position:
-        x: 80
-        'y': 110
-      z: 1
-      embeds:
-        - b62d12f9-2303-4aee-ab85-6215d3fb2942
-        - cdc37984-ff60-4c5c-9408-7f41d08b5125
-        - f326ad75-3335-4991-87ee-6477742bc247
-        - f33c452d-a5ff-4e4f-9a86-7a4404350047
-        - c37927ab-7a26-48a4-a4c6-82f37fe42ff1
-    b62d12f9-2303-4aee-ab85-6215d3fb2942:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 410
-        'y': 470
-      z: 2
-      parent: b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-      embeds: []
-      iscontainedinside:
-        - b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-    cdc37984-ff60-4c5c-9408-7f41d08b5125:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 530
-        'y': 470
-      z: 2
-      parent: b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-      embeds: []
-      iscontainedinside:
-        - b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-    d86a3e51-ef74-4f2a-9591-8c547b7bee6c:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 60
-        'y': 840
-      z: 1
-      embeds: []
-      isassociatedwith:
-        - cdc37984-ff60-4c5c-9408-7f41d08b5125
-    f326ad75-3335-4991-87ee-6477742bc247:
-      size:
-        width: 240
-        height: 240
-      position:
-        x: 110
-        'y': 470
-      z: 2
-      parent: b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-      embeds:
-        - 49c6b353-f2b2-400e-8225-9b930c4fe3bc
-      dependson:
-        - b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-    49c6b353-f2b2-400e-8225-9b930c4fe3bc:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 140
-        'y': 530
-      z: 3
-      parent: f326ad75-3335-4991-87ee-6477742bc247
-      embeds: []
-      dependson:
-        - f326ad75-3335-4991-87ee-6477742bc247
-        - 3c88a3d8-5ec3-45bb-b64d-b0d7e5ba83d8
-    e5be370a-87bd-42ab-9867-aa6b8516fc20:
-      source:
-        id: b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-      target:
-        id: 3c88a3d8-5ec3-45bb-b64d-b0d7e5ba83d8
-    f33c452d-a5ff-4e4f-9a86-7a4404350047:
-      size:
-        width: 240
-        height: 240
-      position:
-        x: 410
-        'y': 170
-      z: 2
-      parent: b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-      embeds:
-        - e3dac1ab-737b-4028-beeb-c7bd4c32e02e
-      iscontainedinside:
-        - b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-    e3dac1ab-737b-4028-beeb-c7bd4c32e02e:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 440
-        'y': 230
-      z: 3
-      parent: f33c452d-a5ff-4e4f-9a86-7a4404350047
-      embeds: []
-      isassociatedwith:
-        - 11e01c06-b073-4fd2-a77a-51b9aef7bf32
-        - b62d12f9-2303-4aee-ab85-6215d3fb2942
-      iscontainedinside:
-        - f33c452d-a5ff-4e4f-9a86-7a4404350047
-    253b89fc-8352-48e9-84fe-afbfd9dab01f:
-      source:
-        id: f326ad75-3335-4991-87ee-6477742bc247
-      target:
-        id: f33c452d-a5ff-4e4f-9a86-7a4404350047
-    c37927ab-7a26-48a4-a4c6-82f37fe42ff1:
-      size:
-        width: 240
-        height: 240
-      position:
-        x: 110
-        'y': 170
-      z: 2
-      parent: b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-      embeds:
-        - c9612a53-6333-482a-ba64-5a1ccc3e4e81
-      iscontainedinside:
-        - b6bd65b2-cfd4-4f26-b699-ff6fcdecb559
-    c70a35f2-81a9-4c4a-882c-0cd7475af6c7:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 180
-        'y': 840
-      z: 1
-      embeds: []
-      isassociatedwith:
-        - cdc37984-ff60-4c5c-9408-7f41d08b5125
-      iscontainedinside:
-        - c37927ab-7a26-48a4-a4c6-82f37fe42ff1
-        - f33c452d-a5ff-4e4f-9a86-7a4404350047
-    c9612a53-6333-482a-ba64-5a1ccc3e4e81:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 140
-        'y': 230
-      z: 3
-      parent: c37927ab-7a26-48a4-a4c6-82f37fe42ff1
-      embeds: []
-      isassociatedwith:
-        - 11e01c06-b073-4fd2-a77a-51b9aef7bf32
-        - b62d12f9-2303-4aee-ab85-6215d3fb2942
-      iscontainedinside:
-        - c37927ab-7a26-48a4-a4c6-82f37fe42ff1
-    067a7cdc-6c30-4311-92d6-97a37c20e8e4:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 300
-        'y': 840
-      z: 1
-      embeds: []
-      isassociatedwith:
-        - d86a3e51-ef74-4f2a-9591-8c547b7bee6c
-      iscontainedinside:
-        - c37927ab-7a26-48a4-a4c6-82f37fe42ff1
-        - f33c452d-a5ff-4e4f-9a86-7a4404350047
-      dependson:
-        - c9612a53-6333-482a-ba64-5a1ccc3e4e81
-        - e3dac1ab-737b-4028-beeb-c7bd4c32e02e
-    d6b7e368-baec-470a-bedb-cab764b15824:
-      size:
-        width: 60
-        height: 60
-      position:
-        x: 420
-        'y': 840
-      z: 1
-      embeds: []
-      isassociatedwith:
-        - 521210b6-1472-4d0f-a49e-caa7898103ab
-        - 14de148d-c95d-4f5f-bcf7-6e123d54844b
-        - 12dba8bf-4e7e-4308-98ae-eb1f24f5967a
-        - c70a35f2-81a9-4c4a-882c-0cd7475af6c7
-      dependson:
-        - 067a7cdc-6c30-4311-92d6-97a37c20e8e4
-    3cdce4bd-b7c6-42bb-92f0-8ccc985df15b:
-      source:
-        id: f326ad75-3335-4991-87ee-6477742bc247
-      target:
-        id: c37927ab-7a26-48a4-a4c6-82f37fe42ff1
